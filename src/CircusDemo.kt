@@ -2,7 +2,7 @@ import kotlin.math.floor
 
 data class PlayInfo(val name: String, val type: String)
 
-val playInfos: MutableMap<String, PlayInfo> = mutableMapOf(
+private val playInfos: MutableMap<String, PlayInfo> = mutableMapOf(
     Pair("西红市首富", PlayInfo("西红市首富", "comedy")),
     Pair("夏洛的烦恼", PlayInfo("夏洛的烦恼", "comedy")),
     Pair("新宿事件", PlayInfo("新宿事件", "tragedy"))
@@ -18,7 +18,7 @@ data class PerformancesData(
 
 data class Invoices(val customer: String, val performances: List<PerformancesData>)
 
-val invoices = Invoices(
+private val invoices = Invoices(
     "中船戏院", listOf(
         PerformancesData("西红市首富", 55),
         PerformancesData("夏洛的烦恼", 35),
