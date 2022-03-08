@@ -9,6 +9,8 @@ sealed class MyList<out A> {
 
     abstract val length: Int
 
+    abstract fun headSafe(): Result<A>
+
     // 扩展类在列表类内定义，并成为私有类
     internal object Nil : MyList<Nothing>() {
         override fun isEmpty(): Boolean = true
@@ -16,6 +18,8 @@ sealed class MyList<out A> {
         override fun toString(): String = "[NIL]"
 
         override val length: Int = 0
+
+        override fun headSafe(): Result<Nothing> = Result()
     }
 
     internal class Cons<out A>(
@@ -32,6 +36,9 @@ sealed class MyList<out A> {
             is Nil -> acc
             is Cons -> toString("$acc${list.head}, ", list.tail)
         }
+
+        override fun headSafe(): Result<A> = Result(head)
+
     }
 
 //    fun cons(a: A): MyList<A> = Cons(a, this)
@@ -123,6 +130,23 @@ sealed class MyList<out A> {
         list1.reverse().foldLeft(list2) { x -> { y -> x.cons(y) } }
 
 //    fun <A> flatten(list: MyList<A>): MyList<A> = list.foldRight(Nil) { x -> x::concat }
+
+    fun lastSafe(): Result<A> = foldLeft(Result()) {
+        { y ->
+            Result(y)
+        }
+    }
+
+    fun <B> map(f: (A) -> B): MyList<B> =
+        coFoldRight(Nil) { h -> { t: MyList<B> -> Cons(f(h), t) } }
+
+    fun <B> flatmap(f: (A) -> MyList<B>): MyList<B> = flatten(map(f))
+
+    fun filter(p: (A) -> Boolean): MyList<A> = coFoldRight(Nil) { h ->
+        { t: MyList<A> ->
+            if (p(h)) Cons(h, t) else t
+        }
+    }
 }
 
 fun sum(list: MyList<Int>): Int = list.foldLeft(0) { x -> { y -> x + y } }
@@ -177,3 +201,14 @@ fun main() {
 //        }
 //    }
 //}
+
+tailrec fun <A> lastSafe(list: MyList<A>): Result<A> = when (list) {
+    MyList.Nil -> Result()
+    is MyList.Cons -> when (list.tail) {
+        MyList.Nil -> Result(list.head)
+        is MyList.Cons -> lastSafe(list.tail)
+    }
+}
+
+fun <A> flatten(list: MyList<MyList<A>>): MyList<A> =
+    list.foldRight(MyList.Nil) { x -> x::concat }
