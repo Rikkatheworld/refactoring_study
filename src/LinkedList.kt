@@ -7,11 +7,15 @@ sealed class MyList<out A> {
 
     fun cons(a: @UnsafeVariance A): MyList<A> = Cons(a, this)
 
+    abstract val length: Int
+
     // 扩展类在列表类内定义，并成为私有类
     internal object Nil : MyList<Nothing>() {
         override fun isEmpty(): Boolean = true
 
         override fun toString(): String = "[NIL]"
+
+        override val length: Int = 0
     }
 
     internal class Cons<out A>(
@@ -21,6 +25,8 @@ sealed class MyList<out A> {
         override fun isEmpty(): Boolean = false
 
         override fun toString(): String = "[${toString("", this)}NIL]"
+
+        override val length: Int = tail.length + 1
 
         tailrec fun toString(acc: String, list: MyList<@UnsafeVariance A>): String = when (list) {
             is Nil -> acc
@@ -116,7 +122,7 @@ sealed class MyList<out A> {
     fun <A> concatViaLeft(list1: MyList<A>, list2: MyList<A>): MyList<A> =
         list1.reverse().foldLeft(list2) { x -> { y -> x.cons(y) } }
 
-    fun <A> flatten(list: MyList<A>): MyList<A> = list.foldRight(Nil) { x -> x::concat }
+//    fun <A> flatten(list: MyList<A>): MyList<A> = list.foldRight(Nil) { x -> x::concat }
 }
 
 fun sum(list: MyList<Int>): Int = list.foldLeft(0) { x -> { y -> x + y } }
@@ -137,37 +143,37 @@ fun product(list: MyList<Double>): Double = list.foldLeft(1.0) { x -> { y -> x *
 
 fun main() {
     val list = MyList("a", "b", "c", "d", "e")
-    val aList = listOf(1,2,3,4,5)
-    aList.map {  }
+    val aList = listOf(1, 2, 3, 4, 5)
+    aList.map { }
     print(list)
 }
 
-sealed class EmptyMyList<A> {
-    fun cons(a: A): EmptyMyList<A> = Cons(a, this)
-
-    abstract class Empty<A> : EmptyMyList<A>() {
-    }
-
-    object Nil : Empty<Nothing>() {
-        override fun funconcat(list: EmptyMyList<Nothing>): EmptyMyList<Nothing> = list
-
-    }
-
-    class Cons<A>(
-        internal val head: A,
-        internal val tail: EmptyMyList<A>
-    ) : EmptyMyList<A>() {
-        override fun funconcat(list: EmptyMyList<A>): EmptyMyList<A> = Cons(this.head, list.concat(this.tail))
-    }
-
-    fun concat(list: EmptyMyList<A>): EmptyMyList<A> = concat(this, list)
-
-    abstract fun funconcat(list: EmptyMyList<A>): EmptyMyList<A>
-
-    companion object {
-        private fun <A> concat(list1: EmptyMyList<A>, list2: EmptyMyList<A>): EmptyMyList<A> = when (list1) {
-            Nil -> list2
-            is Cons -> concat(list1.tail, list2).cons(list1.head)
-        }
-    }
-}
+//sealed class EmptyMyList<A> {
+//    fun cons(a: A): EmptyMyList<A> = Cons(a, this)
+//
+//    abstract class Empty<A> : EmptyMyList<A>() {
+//    }
+//
+//    object Nil : Empty<Nothing>() {
+//        override fun funconcat(list: EmptyMyList<Nothing>): EmptyMyList<Nothing> = list
+//
+//    }
+//
+//    class Cons<A>(
+//        internal val head: A,
+//        internal val tail: EmptyMyList<A>
+//    ) : EmptyMyList<A>() {
+//        override fun funconcat(list: EmptyMyList<A>): EmptyMyList<A> = Cons(this.head, list.concat(this.tail))
+//    }
+//
+//    fun concat(list: EmptyMyList<A>): EmptyMyList<A> = concat(this, list)
+//
+//    abstract fun funconcat(list: EmptyMyList<A>): EmptyMyList<A>
+//
+//    companion object {
+//        private fun <A> concat(list1: EmptyMyList<A>, list2: EmptyMyList<A>): EmptyMyList<A> = when (list1) {
+//            Nil -> list2
+//            is Cons -> concat(list1.tail, list2).cons(list1.head)
+//        }
+//    }
+//}
